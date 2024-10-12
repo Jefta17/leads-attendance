@@ -19,10 +19,14 @@ export default function LoginForm({ role }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const email = convertNimToEmail(nim); // Konversi NIM menjadi email
+      const email = convertNimToEmail(nim); 
       await signInWithEmailAndPassword(auth, email, password);
       alert(`Login berhasil untuk NIM ${nim}`);
-      // Setelah login, redirect ke halaman /mahasiswa/[nim]/home
+      
+      // Simpan waktu login di localStorage
+      localStorage.setItem('lastActivity', new Date().getTime());
+
+      // Redirect ke dashboard mahasiswa
       router.push(`/mahasiswa/${nim}/home`);
     } catch (error) {
       console.error('Error during login:', error);
@@ -36,7 +40,6 @@ export default function LoginForm({ role }) {
         {role === 'mahasiswa' ? 'Login Mahasiswa' : 'Login Dosen'}
       </h2>
       
-      {/* Input NIM */}
       <div className="mb-4">
         <input
           type="text"
@@ -48,7 +51,6 @@ export default function LoginForm({ role }) {
         />
       </div>
 
-      {/* Input Password */}
       <div className="mb-6">
         <input
           type="password"
@@ -62,7 +64,6 @@ export default function LoginForm({ role }) {
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      {/* Checkbox dan Tombol Masuk */}
       <div className="flex items-center justify-between mb-6">
         <label className="flex items-center">
           <input type="checkbox" className="mr-2" />

@@ -1,30 +1,92 @@
 // src/app/mahasiswa/[nim]/home/page.js
-
-// src/app/mahasiswa/[nim]/home/page.js
-
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
 import Image from "next/image";
 import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth"; // Import listener autentikasi Firebase
 
 const MahasiswaDashboard = () => {
   const router = useRouter();
   const pathname = usePathname();
   const nim = pathname.split("/")[2]; // Ambil NIM dari URL
   const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown visibility
+  const [isAuthChecked, setIsAuthChecked] = useState(false); // State untuk melacak apakah autentikasi sudah diperiksa
 
-  useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
-      // Jika tidak ada user yang login, redirect ke halaman login
-      router.push("/login");
+  // Fungsi untuk mengecek waktu aktivitas terakhir
+  const checkInactivity = useCallback(() => {
+    const currentTime = new Date().getTime();
+    const lastActivity = localStorage.getItem("lastActivity");
+  
+    console.log("Checking inactivity... Current Time:", currentTime, "Last Activity:", lastActivity);
+  
+    if (lastActivity) {
+      const timeDifference = currentTime - lastActivity;
+  
+      // Jika sudah lebih dari 1 menit (60000 ms), lakukan logout
+      if (timeDifference > 60000) { // 1 menit dalam milidetik
+        alert("Sesi Anda telah habis. Silakan login kembali.");
+        localStorage.removeItem("lastActivity");
+        router.push("/mahasiswa/login"); // Arahkan ke login mahasiswa
+      }
     }
   }, [router]);
+  
+  const updateActivityTime = () => {
+    const currentTime = new Date().getTime();
+    console.log("Activity detected, updating time to:", currentTime);
+    localStorage.setItem("lastActivity", currentTime);
+  };
+  
 
-  return (
+  // useEffect untuk mendengarkan perubahan status autentikasi
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Jika pengguna sudah login, periksa waktu aktivitas
+        updateActivityTime(); // Perbarui waktu aktivitas saat pengguna ada
+        setIsAuthChecked(true); // Tanda bahwa autentikasi sudah diperiksa
+      } else {
+        // Jika tidak ada user, arahkan ke halaman login
+        router.push("/mahasiswa/login");
+      }
+    });
+
+    return () => {
+      unsubscribe(); // Bersihkan listener saat komponen di-unmount
+    };
+  }, [router]);
+
+  // Setelah autentikasi diperiksa, pasang listener untuk aktivitas pengguna
+  useEffect(() => {
+    if (isAuthChecked) {
+      // Pasang listener hanya setelah autentikasi diperiksa
+      const inactivityTimer = setTimeout(() => {
+        checkInactivity();
+      }, 60000); // 1 menit dalam milidetik
+
+      const handleUserActivity = () => {
+        updateActivityTime();
+      };
+
+      // Menangkap berbagai event aktivitas pengguna di halaman
+      window.addEventListener("mousemove", handleUserActivity);
+      window.addEventListener("keydown", handleUserActivity);
+      window.addEventListener("click", handleUserActivity);
+
+      // Bersihkan event listener dan timer saat komponen di-unmount
+      return () => {
+        clearTimeout(inactivityTimer);
+        window.removeEventListener("mousemove", handleUserActivity);
+        window.removeEventListener("keydown", handleUserActivity);
+        window.removeEventListener("click", handleUserActivity);
+      };
+    }
+  }, [isAuthChecked, checkInactivity]);
+
+  return isAuthChecked ? (
     <div className="min-h-screen flex flex-col">
+      {/* Header dengan logo dan navbar */}
       <header className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 shadow-md text-white flex justify-between items-center h-20">
         <div className="flex items-center w-full">
           {/* Bagian Logo */}
@@ -36,7 +98,6 @@ const MahasiswaDashboard = () => {
               height={40}
               className="h-13"
             />
-            {/* Garis vertikal tipis setelah logo */}
             <div className="border-l border-gray-200 h-10 mx-4"></div>
           </div>
 
@@ -72,7 +133,7 @@ const MahasiswaDashboard = () => {
 
           {/* Avatar dan Ikon di Kanan */}
           <div className="flex items-center justify-end space-x-4">
-            {/* Icon Section */}
+            {/* Ikon */}
             <div className="flex space-x-4">
               <div className="bg-white p-2 rounded-full cursor-pointer hover:bg-gray-200">
                 <Image
@@ -80,7 +141,6 @@ const MahasiswaDashboard = () => {
                   alt="Visibility Icon"
                   width={24}
                   height={24}
-                  className="cursor-pointer"
                 />
               </div>
               <div className="bg-white p-2 rounded-full relative cursor-pointer hover:bg-gray-200">
@@ -89,7 +149,6 @@ const MahasiswaDashboard = () => {
                   alt="Notification Icon"
                   width={24}
                   height={24}
-                  className="cursor-pointer"
                 />
                 <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-2">
                   377
@@ -101,7 +160,6 @@ const MahasiswaDashboard = () => {
                   alt="Chat Icon"
                   width={24}
                   height={24}
-                  className="cursor-pointer"
                 />
               </div>
               <div className="bg-white p-2 rounded-full cursor-pointer hover:bg-gray-200">
@@ -110,7 +168,6 @@ const MahasiswaDashboard = () => {
                   alt="Settings Icon"
                   width={24}
                   height={24}
-                  className="cursor-pointer"
                 />
               </div>
             </div>
@@ -201,9 +258,7 @@ const MahasiswaDashboard = () => {
 
           {/* Courses Section */}
           <div>
-            <h2 className="text-2xl font-bold mb-4">
-              Recently accessed courses
-            </h2>
+            <h2 className="text-2xl font-bold mb-4">Recently accessed courses</h2>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-purple-200 rounded-md"></div>
@@ -212,8 +267,7 @@ const MahasiswaDashboard = () => {
                     2024 Ganjil | Analisis dan Desain Perangkat Lunak
                   </h3>
                   <p className="text-sm">
-                    Mata Kuliah Analisis dan Desain Perangkat Lunak Kurikulum
-                    511.2024
+                    Mata Kuliah Analisis dan Desain Perangkat Lunak Kurikulum 511.2024
                   </p>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
                     <div
@@ -241,8 +295,9 @@ const MahasiswaDashboard = () => {
         </main>
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default MahasiswaDashboard;
+
 
