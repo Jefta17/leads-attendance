@@ -70,6 +70,14 @@ const MahasiswaDashboard = () => {
     }
   }, [isAuthChecked, checkInactivity]);
 
+  const courseData = [
+    { id: "511.2024", title: "Analisis dan Desain Perangkat Lunak", progress: 16 },
+    { id: "512.2024", title: "Bahasa Inggris", progress: 30 },
+    { id: "513.2024", title: "Teori Bahasa dan Automata", progress: 50 },
+    { id: "514.2024", title: "Agama", progress: 75 },
+    { id: "515.2024", title: "Matematika Diskrit", progress: 40 },
+  ];
+
   return isAuthChecked ? (
     <div className="min-h-screen flex flex-col">
       {/* Header tetap sama */}
@@ -262,7 +270,10 @@ const MahasiswaDashboard = () => {
                     style={{ width: "16%" }}
                   ></div>
                 </div>
-                <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4">
+                <button
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
+                  onClick={() => router.push(`/mahasiswa/course/${"511.2024"}`)}  
+                >
                   View
                 </button>
               </div>
@@ -289,7 +300,10 @@ const MahasiswaDashboard = () => {
                       style={{ width: "30%" }}
                     ></div>
                   </div>
-                  <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4">
+                  <button
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
+                    onClick={() => router.push(`/mahasiswa/course/${"512.2024"}`)} 
+                  >
                     View
                   </button>
                 </div>
@@ -313,7 +327,10 @@ const MahasiswaDashboard = () => {
                       style={{ width: "50%" }}
                     ></div>
                   </div>
-                  <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4">
+                  <button
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
+                    onClick={() => router.push(`/mahasiswa/course/${"513.2024"}`)}  
+                  >
                     View
                   </button>
                 </div>
@@ -337,7 +354,10 @@ const MahasiswaDashboard = () => {
                       style={{ width: "75%" }}
                     ></div>
                   </div>
-                  <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4">
+                  <button
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
+                    onClick={() => router.push(`/mahasiswa/course/${"514.2024"}`)} 
+                  >
                     View
                   </button>
                 </div>
@@ -361,7 +381,10 @@ const MahasiswaDashboard = () => {
                       style={{ width: "40%" }}
                     ></div>
                   </div>
-                  <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4">
+                  <button
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
+                    onClick={() => router.push(`/mahasiswa/course/${"515.2024"}`)} 
+                  >
                     View
                   </button>
                 </div>
