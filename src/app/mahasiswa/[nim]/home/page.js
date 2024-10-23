@@ -1,3 +1,4 @@
+// src/app/mahasiswa/[nim]/home/page.js
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -70,6 +71,11 @@ const MahasiswaDashboard = () => {
     }
   }, [isAuthChecked, checkInactivity]);
 
+  const handleHomeClick = () => {
+    console.log("Navigasi ke halaman utama");
+    router.push("/");  // Arahkan ke halaman utama
+  };
+
   const courseData = [
     { id: "511.2024", title: "Analisis dan Desain Perangkat Lunak", progress: 16 },
     { id: "512.2024", title: "Bahasa Inggris", progress: 30 },
@@ -94,7 +100,7 @@ const MahasiswaDashboard = () => {
             <div className="border-l border-gray-200 h-10 mx-4"></div>
           </div>
           <div className="flex-1 flex ml-8 space-x-8 text-xl">
-            <button className="text-white">Home</button>
+            <button className="text-white" onClick={handleHomeClick}>Home</button>
             <button className="text-white">Faculty</button>
             <button className="text-white">Announcements</button>
             <button className="text-white">Helpdesk</button>
@@ -250,29 +256,18 @@ const MahasiswaDashboard = () => {
 
           {/* Recently Accessed Courses */}
           <div className="bg-white p-16 rounded-lg shadow-md mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Recently accessed courses
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Recently accessed courses</h2>
             <div className="flex items-start space-x-4">
-              {/* Kotak gambar berwarna */}
               <div className="w-32 h-32 bg-purple-500 rounded-md"></div>
               <div className="flex-grow">
-                <h3 className="text-2xl font-bold text-gray-900 ">
-                  2024 Ganjil | Analisis dan Desain Perangkat Lunak
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Mata Kuliah Analisis dan Desain Perangkat Lunak Kurikulum
-                  511.2024
-                </p>
+                <h3 className="text-2xl font-bold text-gray-900">2024 Ganjil | Analisis dan Desain Perangkat Lunak</h3>
+                <p className="text-sm text-gray-600">Mata Kuliah Analisis dan Desain Perangkat Lunak Kurikulum 511.2024</p>
                 <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                  <div
-                    className="bg-green-500 h-full rounded-full"
-                    style={{ width: "16%" }}
-                  ></div>
+                  <div className="bg-green-500 h-full rounded-full" style={{ width: "16%" }}></div>
                 </div>
                 <button
                   className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
-                  onClick={() => router.push(`/mahasiswa/course/${"511.2024"}`)}  
+                  onClick={() => router.push(`/mahasiswa/course/${"511.2024"}`)}
                 >
                   View
                 </button>
@@ -285,24 +280,16 @@ const MahasiswaDashboard = () => {
           <div className="space-y-6">
             <div className="bg-white p-16 rounded-lg shadow-md">
               <div className="flex items-start space-x-4">
-                {/* Kotak gambar berwarna untuk setiap kursus */}
                 <div className="w-32 h-32 bg-blue-500 rounded-md"></div>
                 <div className="flex-grow">
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    2024 Ganjil | Bahasa Inggris
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Mata Kuliah Bahasa Inggris Kurikulum 511.2024
-                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900">2024 Ganjil | Bahasa Inggris</h3>
+                  <p className="text-sm text-gray-600">Mata Kuliah Bahasa Inggris Kurikulum 511.2024</p>
                   <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                    <div
-                      className="bg-green-500 h-full rounded-full"
-                      style={{ width: "30%" }}
-                    ></div>
+                    <div className="bg-green-500 h-full rounded-full" style={{ width: "30%" }}></div>
                   </div>
                   <button
                     className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
-                    onClick={() => router.push(`/mahasiswa/course/${"512.2024"}`)} 
+                    onClick={() => router.push(`/mahasiswa/course/${"512.2024"}`)}
                   >
                     View
                   </button>
@@ -312,24 +299,16 @@ const MahasiswaDashboard = () => {
 
             <div className="bg-white p-16 rounded-lg shadow-md">
               <div className="flex items-start space-x-4">
-                {/* Kotak gambar berwarna */}
                 <div className="w-32 h-32 bg-red-500 rounded-md"></div>
                 <div className="flex-grow">
-                  <h3 className="text-2xl font-bold text-gray-900 ">
-                    2024 Ganjil | Teori Bahasa dan Automata
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Mata Kuliah Teori Bahasa dan Automata Kurikulum 511.2024
-                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900">2024 Ganjil | Teori Bahasa dan Automata</h3>
+                  <p className="text-sm text-gray-600">Mata Kuliah Teori Bahasa dan Automata Kurikulum 511.2024</p>
                   <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                    <div
-                      className="bg-green-500 h-full rounded-full"
-                      style={{ width: "50%" }}
-                    ></div>
+                    <div className="bg-green-500 h-full rounded-full" style={{ width: "50%" }}></div>
                   </div>
                   <button
                     className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
-                    onClick={() => router.push(`/mahasiswa/course/${"513.2024"}`)}  
+                    onClick={() => router.push(`/mahasiswa/course/${"513.2024"}`)}
                   >
                     View
                   </button>
@@ -339,24 +318,16 @@ const MahasiswaDashboard = () => {
 
             <div className="bg-white p-16 rounded-lg shadow-md">
               <div className="flex items-start space-x-4">
-                {/* Kotak gambar berwarna */}
                 <div className="w-32 h-32 bg-orange-500 rounded-md"></div>
                 <div className="flex-grow">
-                  <h3 className="text-2xl font-bold text-gray-900 ">
-                    2024 Ganjil | Agama
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Mata Kuliah Agama Kurikulum 511.2024
-                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900">2024 Ganjil | Agama</h3>
+                  <p className="text-sm text-gray-600">Mata Kuliah Agama Kurikulum 511.2024</p>
                   <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                    <div
-                      className="bg-green-500 h-full rounded-full"
-                      style={{ width: "75%" }}
-                    ></div>
+                    <div className="bg-green-500 h-full rounded-full" style={{ width: "75%" }}></div>
                   </div>
                   <button
                     className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
-                    onClick={() => router.push(`/mahasiswa/course/${"514.2024"}`)} 
+                    onClick={() => router.push(`/mahasiswa/course/${"514.2024"}`)}
                   >
                     View
                   </button>
@@ -366,24 +337,16 @@ const MahasiswaDashboard = () => {
 
             <div className="bg-white p-16 rounded-lg shadow-md">
               <div className="flex items-start space-x-4">
-                {/* Kotak gambar berwarna */}
                 <div className="w-32 h-32 bg-purple-500 rounded-md"></div>
                 <div className="flex-grow">
-                  <h3 className="text-2xl font-bold text-gray-900 ">
-                    2024 Ganjil | Matematika Diskrit
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Mata Kuliah Matematika Diskrit Kurikulum 511.2024
-                  </p>
+                  <h3 className="text-2xl font-bold text-gray-900">2024 Ganjil | Matematika Diskrit</h3>
+                  <p className="text-sm text-gray-600">Mata Kuliah Matematika Diskrit Kurikulum 511.2024</p>
                   <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                    <div
-                      className="bg-green-500 h-full rounded-full"
-                      style={{ width: "40%" }}
-                    ></div>
+                    <div className="bg-green-500 h-full rounded-full" style={{ width: "40%" }}></div>
                   </div>
                   <button
                     className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-8 rounded text-sm mt-4"
-                    onClick={() => router.push(`/mahasiswa/course/${"515.2024"}`)} 
+                    onClick={() => router.push(`/mahasiswa/course/${"515.2024"}`)}
                   >
                     View
                   </button>

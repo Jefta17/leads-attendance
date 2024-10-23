@@ -3,7 +3,8 @@
 
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore'; // Import updateDoc
 import { useRouter } from 'next/navigation';
 
 export default function LoginForm({ role }) {
@@ -16,6 +17,18 @@ export default function LoginForm({ role }) {
     return `${nim}@mahasiswa.upnvj.ac.id`;
   };
 
+  const formatLastLogin = () => {
+    const currentDate = new Date();
+    return currentDate.toLocaleString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric"
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -23,8 +36,16 @@ export default function LoginForm({ role }) {
       await signInWithEmailAndPassword(auth, email, password);
       alert(`Login berhasil untuk NIM ${nim}`);
       
-      // Simpan waktu login di localStorage
+      // Simpan waktu login dan NIM di localStorage
       localStorage.setItem('lastActivity', new Date().getTime());
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('nim', nim); // Simpan NIM
+
+      // Simpan last login ke Firestore
+      const userDocRef = doc(db, "mahasiswa", nim);
+      await updateDoc(userDocRef, {
+        lastLogin: formatLastLogin() // Simpan dalam format yang mudah dibaca
+      });
 
       // Redirect ke dashboard mahasiswa
       router.push(`/mahasiswa/${nim}/home`);
@@ -85,5 +106,3 @@ export default function LoginForm({ role }) {
     </form>
   );
 }
-
-

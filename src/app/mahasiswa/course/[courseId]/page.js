@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
+import CourseContent from "@/components/CourseContent"; // Tetap tambahkan CourseContent
 
 const CourseDetail = () => {
   const params = useParams();
@@ -36,40 +37,27 @@ const CourseDetail = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 bg-gray-50 pt-20 pb-8">
-        {/* Tambahkan padding-top agar judul tidak mendem */}
-        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center py-8">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center py-8 rounded-t-lg shadow-md">
           <h1 className="text-3xl font-bold">2024 GANJIL | {course.title}</h1>
           <p className="text-sm mt-2">
             Dashboard / Courses / {course.title} - Kurikulum {course.id}
           </p>
         </div>
 
+        {/* Content Section */}
         <div className="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4">Course Content</h2>
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-gray-600">Kode Etik Mahasiswa</p>
-              <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded text-sm mt-2">
-                Mark as done
-              </button>
-            </div>
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-gray-600">Link Zoom Kelas Besar</p>
-              <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded text-sm mt-2">
-                Mark as done
-              </button>
-            </div>
-          </div>
+          <CourseContent />
 
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4">Level up!</h2>
+          <div className="bg-white p-8 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">Level up!</h2>
             <div className="flex items-center">
-              <div className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl">
+              <div className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl shadow-md">
                 1
               </div>
-              <p className="ml-4">0 XP</p>
+              <p className="ml-4 text-gray-700">0 XP</p>
             </div>
-            <p className="mt-4 text-sm">
+            <p className="mt-4 text-sm text-gray-500">
               Participate in the course to gain experience points and level up!
             </p>
           </div>
