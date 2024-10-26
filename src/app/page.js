@@ -1,6 +1,6 @@
-// src/app/page.js
+// src/app/page.js // Jangan hapus komentar ini, sebagai penanda kode
 
-"use client"; // Jangan hapus komentar ini, sebagai penanda kode
+"use client"; 
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -50,10 +50,11 @@ export default function HomePage() {
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
 
+    // Membersihkan event listener saat komponen di-unmount
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [fetchUserDetails, userNim]);
+  }, [fetchUserDetails]);
 
   // Fungsi untuk navigasi ke halaman login
   const handleLoginClick = () => {
@@ -185,3 +186,4 @@ export default function HomePage() {
     </div>
   );
 }
+

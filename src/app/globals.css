@@ -26,3 +26,25 @@ body {
   }
 }
 
+/* Tambahkan ini di file CSS global atau di dalam tag <style> di komponen */
+
+.sticky-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* Agar navbar berada di atas elemen lain */
+  transition: transform 0.3s ease, opacity 0.3s ease; /* Transisi untuk transformasi dan opacity */
+}
+
+.sticky {
+  background-color: rgba(128, 0, 128, 0.9); /* Warna latar belakang ketika sticky */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Bayangan saat sticky */
+  transform: translateY(0); /* Posisi default saat terlihat */
+  opacity: 1; /* Tampak terlihat */
+}
+
+.hidden {
+  transform: translateY(-100%); /* Menggeser navbar ke atas, di luar tampilan */
+  opacity: 0; /* Menyembunyikan navbar */
+}
+
+
