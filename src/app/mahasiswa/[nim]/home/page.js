@@ -1,3 +1,5 @@
+//  mahasiswa/[nim]/home/page.js
+
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";

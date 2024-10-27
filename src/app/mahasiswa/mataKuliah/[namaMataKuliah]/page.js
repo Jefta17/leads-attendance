@@ -1,4 +1,4 @@
-// pages/[namaMataKuliah]/page.js
+// mahasiswa/mataKuliah/[namaMataKuliah]/page.js
 
 "use client";
 import { useEffect, useState } from "react";
@@ -27,6 +27,7 @@ const CourseDetail = ({ params }) => {
   const decodedNamaMataKuliah = decodeURIComponent(namaMataKuliah);
 
   useEffect(() => {
+
     const fetchCourseData = async () => {
       if (decodedNamaMataKuliah) {
         const courseRef = doc(db, "mataKuliah", decodedNamaMataKuliah);
