@@ -1,11 +1,10 @@
-// mahasiswa/mataKuliah/[namaMataKuliah]/page.js
-
 "use client";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const Breadcrumb = ({ path }) => (
   <nav className="text-white text-sm mt-2 text-center">
@@ -23,11 +22,11 @@ const CourseDetail = ({ params }) => {
   const [course, setCourse] = useState(null);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const decodedNamaMataKuliah = decodeURIComponent(namaMataKuliah);
 
   useEffect(() => {
-
     const fetchCourseData = async () => {
       if (decodedNamaMataKuliah) {
         const courseRef = doc(db, "mataKuliah", decodedNamaMataKuliah);
@@ -39,17 +38,25 @@ const CourseDetail = ({ params }) => {
 
             const pertemuanRef = collection(courseRef, "Pertemuan");
             const pertemuanSnapshot = await getDocs(pertemuanRef);
-            const topicsList = pertemuanSnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
+            const topicsList = await Promise.all(
+              pertemuanSnapshot.docs.map(async (pertemuanDoc) => {
+                const absensiRef = collection(pertemuanDoc.ref, "Absensi");
+                const absensiSnapshot = await getDocs(absensiRef);
+                const absensiList = absensiSnapshot.docs.map((absenDoc) => ({
+                  id: absenDoc.id,
+                  ...absenDoc.data(),
+                }));
+                return {
+                  id: pertemuanDoc.id,
+                  ...pertemuanDoc.data(),
+                  absensi: absensiList,
+                };
+              })
+            );
 
             setTopics(topicsList);
           } else {
-            console.error(
-              "Course tidak ditemukan di Firestore:",
-              courseRef.path
-            );
+            console.error("Course tidak ditemukan di Firestore:", courseRef.path);
           }
         } catch (error) {
           console.error("Error fetching course data:", error);
@@ -72,7 +79,7 @@ const CourseDetail = ({ params }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar /> {/* Navbar */}
+      <Navbar />
       <header className="bg-gradient-to-r from-purple-500 to-pink-500 p-8 text-white flex flex-col items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl font-bold">
@@ -97,60 +104,36 @@ const CourseDetail = ({ params }) => {
           </h2>
           <div className="space-y-4">
             {topics.map((topic, index) => (
-              <details
-                key={index}
-                className="rounded-lg" // Hapus border dari elemen details
-              >
-                {/* Summary dengan background abu-abu dan border */}
+              <details key={index} className="rounded-lg">
                 <summary className="font-semibold text-gray-800 cursor-pointer bg-gray-100 px-4 py-2 rounded-lg border border-gray-300">
                   Pertemuan {index + 1}: {topic.topic || "No Topic Available"}
                 </summary>
 
-                {/* Konten yang akan tampil saat dropdown dibuka tanpa border */}
                 <div className="mt-4 text-gray-600 p-4 bg-white">
-                  {" "}
-                  {/* Tanpa border */}
-                  {/* Presensi Section */}
-                  <div className="rounded-md p-4 mt-2">
-                    <div className="flex items-center">
-                      <Image
-                        src="/images/icon/iconPresensi.png"
-                        alt="Presence Icon"
-                        width={20}
-                        height={20}
-                        className="mr-2"
-                      />
-                      <p className="font-semibold">Presensi Kelas A</p>
-                    </div>
-                    <p className="text-sm text-red-500 my-2">
-                      Restricted: Not available unless you belong to Kelas A
-                    </p>
-                  </div>
-                  <div className="rounded-md p-4 mt-2">
-                    <div className="flex items-center">
-                      <p className="font-semibold">
-                        Bab {index + 1}: {topic.topic || "No Topic Available"}
-                      </p>
-                    </div>
-                    <button className="bg-blue-500 text-white font-semibold px-3 py-1 rounded-md mt-2">
-                      Mark as done
-                    </button>
-                  </div>
-                  <div className="rounded-md p-4 mt-2">
-                    <div className="flex items-center">
-                      <Image
-                        src="/images/icon/iconPresensi.png"
-                        alt="Presence Icon"
-                        width={20}
-                        height={20}
-                        className="mr-2"
-                      />
-                      <p className="font-semibold">Presensi Kelas B</p>
-                    </div>
-                    <button className="bg-blue-500 text-white font-semibold px-3 py-1 rounded-md mt-2">
-                      Mark as done
-                    </button>
-                  </div>
+                  {/* Link Presensi */}
+                  {topic.absensi.length > 0 ? (
+                    topic.absensi.map((absen, idx) => (
+                      <div key={idx} className="mt-2">
+                        <div className="flex items-center">
+                          <Image
+                            src="/images/icon/iconPresensi.png"
+                            alt="Presence Icon"
+                            width={20}
+                            height={20}
+                            className="mr-2"
+                          />
+                          <a
+                            href={`/mahasiswa/absensi/${absen.id}`}
+                            className="font-semibold text-blue-500 hover:underline"
+                          >
+                            Presensi
+                          </a>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500">Belum ada presensi untuk pertemuan ini.</p>
+                  )}
                 </div>
               </details>
             ))}

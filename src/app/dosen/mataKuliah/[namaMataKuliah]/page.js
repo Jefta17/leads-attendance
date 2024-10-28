@@ -1,9 +1,11 @@
+// dosen/mataKuliah[namaMatkuliah]/page.js
+
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, collection, getDocs, setDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, setDoc, addDoc } from "firebase/firestore";
 import Image from "next/image";
 
 const CourseDetailPage = ({ params }) => {
@@ -13,8 +15,8 @@ const CourseDetailPage = ({ params }) => {
   const [courseData, setCourseData] = useState(null);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newTopic, setNewTopic] = useState("");
   const [selectedPertemuan, setSelectedPertemuan] = useState(null);
+  const [newTopic, setNewTopic] = useState("");
   const [error, setError] = useState("");
 
   const decodedNamaMataKuliah = decodeURIComponent(namaMataKuliah);
@@ -62,32 +64,31 @@ const CourseDetailPage = ({ params }) => {
     }
   }, [decodedNamaMataKuliah, isAuthChecked]);
 
-  const handleAddTopic = async () => {
-    if (!newTopic.trim()) {
-      setError("Topic tidak boleh kosong");
-      return;
-    }
-    setError("");
+  const handleCreateAttendance = async (pertemuanId) => {
     try {
-      const pertemuanRef = doc(
+      // Membuat dokumen absensi baru dengan ID unik di sub-koleksi Absensi
+      const absensiRef = collection(
         db,
         "mataKuliah",
         decodedNamaMataKuliah,
         "Pertemuan",
-        selectedPertemuan.id
+        pertemuanId,
+        "Absensi"
       );
-      await setDoc(pertemuanRef, { topic: newTopic }, { merge: true });
+      const newAbsensiDoc = await addDoc(absensiRef, { isAvailable: true });
+      const idAbsensi = newAbsensiDoc.id;
 
-      const updatedTopics = topics.map((pertemuan) =>
-        pertemuan.id === selectedPertemuan.id
-          ? { ...pertemuan, topic: newTopic }
-          : pertemuan
+      console.log(`Presensi berhasil dibuat untuk pertemuan ${pertemuanId} dengan idAbsensi: ${idAbsensi}`);
+      
+      setTopics((prevTopics) =>
+        prevTopics.map((topic) =>
+          topic.id === pertemuanId
+            ? { ...topic, idAbsensi, isAvailable: true }
+            : topic
+        )
       );
-      setTopics(updatedTopics);
-      setNewTopic("");
-      setSelectedPertemuan(null);
     } catch (error) {
-      console.error("Error menambah topic:", error);
+      console.error("Error membuat presensi:", error);
     }
   };
 
@@ -137,27 +138,20 @@ const CourseDetailPage = ({ params }) => {
                         </button>
                       </div>
 
-                      {selectedPertemuan && selectedPertemuan.id === topic.id && (
-                        <div className="mt-4 bg-white p-4 rounded-lg shadow-md text-black">
-                          <h5 className="text-lg font-semibold mb-2 text-gray-800">
-                            Tambah Topic untuk Pertemuan {index + 1}
-                          </h5>
-                          <input
-                            type="text"
-                            value={newTopic}
-                            onChange={(e) => setNewTopic(e.target.value)}
-                            placeholder="Masukkan topic baru"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500 mb-4"
-                          />
-                          {error && <p className="text-red-500">{error}</p>}
-                          <button
-                            onClick={handleAddTopic}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-                          >
-                            Simpan Topic
-                          </button>
-                        </div>
-                      )}
+                      {/* Buat Presensi untuk Pertemuan */}
+                      <div className="mt-4">
+                        <button
+                          onClick={() => handleCreateAttendance(topic.id)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                        >
+                          Buat Presensi
+                        </button>
+                        {topic.idAbsensi && (
+                          <p className="mt-2 text-gray-600">
+                            Presensi ID: <span className="font-semibold">{topic.idAbsensi}</span>
+                          </p>
+                        )}
+                      </div>
                     </div>
                   ))
                 ) : (

@@ -1,4 +1,4 @@
-// src/app/page.js // Jangan hapus komentar ini, sebagai penanda kode
+// src/app/page.js 
 
 "use client"; 
 
@@ -36,17 +36,16 @@ export default function HomePage() {
 
   // Mengecek status login saat komponen dimount
   useEffect(() => {
-    const loginStatus = localStorage.getItem("isLoggedIn");
-    const nim = localStorage.getItem("nim");
-    if (loginStatus === "true" && nim) {
-      setIsLoggedIn(true); // Jika status login benar, set status sebagai logged in
-      setUserNim(nim); // Set user NIM dari localStorage
-      fetchUserDetails(nim); // Ambil data pengguna dari Firestore
+    const sessionData = JSON.parse(sessionStorage.getItem("session_mahasiswa"));
+    if (sessionData && sessionData.isLoggedIn && sessionData.nimOrNip) {
+      setIsLoggedIn(true); // Set status sebagai logged in jika session ada
+      setUserNim(sessionData.nimOrNip); // Set user NIM dari sessionStorage
+      fetchUserDetails(sessionData.nimOrNip); // Ambil data pengguna dari Firestore
     }
 
     // Event listener untuk mendeteksi ketika user menutup atau me-refresh halaman
     const handleBeforeUnload = () => {
-      localStorage.clear(); // Hapus semua data dari localStorage saat halaman ditutup atau direfresh
+      sessionStorage.removeItem("session_mahasiswa"); // Hapus session saat halaman ditutup atau direfresh
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
 
@@ -70,7 +69,7 @@ export default function HomePage() {
 
   // Fungsi untuk log out
   const handleLogout = () => {
-    localStorage.clear(); // Hapus semua data dari localStorage
+    sessionStorage.removeItem("session_mahasiswa"); // Hapus session data
     setIsLoggedIn(false); // Set state login menjadi false
     setUserNim("");
     setUserName("");
@@ -186,4 +185,3 @@ export default function HomePage() {
     </div>
   );
 }
-
