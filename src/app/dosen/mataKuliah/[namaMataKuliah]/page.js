@@ -1,11 +1,18 @@
-// dosen/mataKuliah[namaMatkuliah]/page.js
+// dosen/mataKuliah/[namaMataKuliah]/page.js
 
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, collection, getDocs, setDoc, addDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  getDocs,
+  setDoc,
+  addDoc,
+} from "firebase/firestore";
 import Image from "next/image";
 
 const CourseDetailPage = ({ params }) => {
@@ -15,7 +22,6 @@ const CourseDetailPage = ({ params }) => {
   const [courseData, setCourseData] = useState(null);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPertemuan, setSelectedPertemuan] = useState(null);
   const [newTopic, setNewTopic] = useState("");
   const [error, setError] = useState("");
 
@@ -64,9 +70,37 @@ const CourseDetailPage = ({ params }) => {
     }
   }, [decodedNamaMataKuliah, isAuthChecked]);
 
+  const handleAddTopic = async (pertemuanId) => {
+    if (!newTopic.trim()) {
+      setError("Topik tidak boleh kosong.");
+      return;
+    }
+
+    try {
+      const pertemuanRef = doc(
+        db,
+        "mataKuliah",
+        decodedNamaMataKuliah,
+        "Pertemuan",
+        pertemuanId
+      );
+
+      await setDoc(pertemuanRef, { topic: newTopic }, { merge: true });
+
+      setTopics((prevTopics) =>
+        prevTopics.map((topic) =>
+          topic.id === pertemuanId ? { ...topic, topic: newTopic } : topic
+        )
+      );
+      setNewTopic("");
+      setError("");
+    } catch (error) {
+      console.error("Gagal menambahkan topik:", error);
+    }
+  };
+
   const handleCreateAttendance = async (pertemuanId) => {
     try {
-      // Membuat dokumen absensi baru dengan ID unik di sub-koleksi Absensi
       const absensiRef = collection(
         db,
         "mataKuliah",
@@ -78,8 +112,10 @@ const CourseDetailPage = ({ params }) => {
       const newAbsensiDoc = await addDoc(absensiRef, { isAvailable: true });
       const idAbsensi = newAbsensiDoc.id;
 
-      console.log(`Presensi berhasil dibuat untuk pertemuan ${pertemuanId} dengan idAbsensi: ${idAbsensi}`);
-      
+      console.log(
+        `Presensi berhasil dibuat untuk pertemuan ${pertemuanId} dengan idAbsensi: ${idAbsensi}`
+      );
+
       setTopics((prevTopics) =>
         prevTopics.map((topic) =>
           topic.id === pertemuanId
@@ -100,7 +136,12 @@ const CourseDetailPage = ({ params }) => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">LeADS: Dashboard Dosen</h1>
           <nav className="space-x-6 text-lg">
-            <button className="hover:underline" onClick={() => router.push("/dosen/home")}>Home</button>
+            <button
+              className="hover:underline"
+              onClick={() => router.push("/dosen/home")}
+            >
+              Home
+            </button>
             <button className="hover:underline">Faculty</button>
             <button className="hover:underline">Announcements</button>
             <button className="hover:underline">Helpdesk</button>
@@ -116,48 +157,68 @@ const CourseDetailPage = ({ params }) => {
             <h2 className="text-4xl font-bold mb-6 text-center text-gray-900">
               {decodedNamaMataKuliah.toUpperCase()}
             </h2>
-            <p className="text-gray-600 mb-8 text-center text-lg">
-              Mata Kuliah {courseData?.id} - Kurikulum 511.2024
-            </p>
-
             <section className="bg-white p-8 rounded-lg shadow-lg">
-              <h3 className="text-3xl font-semibold text-gray-800 mb-6 text-center">Course Content</h3>
+              <h3 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
+                Course Content
+              </h3>
               <div className="space-y-6">
-                {topics.length > 0 ? (
-                  topics.map((topic, index) => (
-                    <div key={index} className="border rounded-lg p-4 shadow-md bg-gray-100">
-                      <div className="flex justify-between items-center">
-                        <h4 className="text-lg font-semibold text-black">
-                          Pertemuan {index + 1}: {topic.topic || "No Topic Available"}
-                        </h4>
-                        <button
-                          onClick={() => setSelectedPertemuan(topic)}
-                          className="text-blue-500 hover:underline"
-                        >
-                          Tambah Topic
-                        </button>
-                      </div>
+                {topics.map((topic, index) => (
+                  <div
+                    key={index}
+                    className="border rounded-lg p-4 shadow-md bg-gray-100"
+                  >
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-lg font-semibold text-black">
+                        Pertemuan {index + 1}:{" "}
+                        {topic.topic || "No Topic Available"}
+                      </h4>
 
-                      {/* Buat Presensi untuk Pertemuan */}
-                      <div className="mt-4">
-                        <button
-                          onClick={() => handleCreateAttendance(topic.id)}
-                          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                        >
-                          Buat Presensi
-                        </button>
-                        {topic.idAbsensi && (
-                          <p className="mt-2 text-gray-600">
-                            Presensi ID: <span className="font-semibold">{topic.idAbsensi}</span>
-                          </p>
-                        )}
-                      </div>
+                      {/* Jika topik belum ada, tampilkan input dan tombol tambah */}
+                      {!topic.topic && (
+                        <div className="flex space-x-2">
+                          {/* Input text untuk topik */}
+                          <input
+                            type="text"
+                            value={newTopic}
+                            onChange={(e) => setNewTopic(e.target.value)}
+                            placeholder="Masukkan nama topik"
+                            className="border rounded p-2 text-gray-900 placeholder-gray-500"
+                            style={{
+                              color: "#1a202c", // warna teks (ubah sesuai kebutuhan)
+                              placeholderColor: "#718096", // warna placeholder
+                            }}
+                          />
+
+                          <button
+                            onClick={() => handleAddTopic(topic.id)}
+                            className="bg-green-500 text-white px-4 py-2 rounded-md"
+                          >
+                            Tambah Topik
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500">No topics available for this course.</p>
-                )}
+
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleCreateAttendance(topic.id)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                      >
+                        Buat Presensi
+                      </button>
+                      {topic.idAbsensi && (
+                        <p className="mt-2 text-gray-600">
+                          Presensi ID:{" "}
+                          <span className="font-semibold">
+                            {topic.idAbsensi}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
+              {error && <p className="text-red-500 mt-4">{error}</p>}
             </section>
           </div>
         ) : (

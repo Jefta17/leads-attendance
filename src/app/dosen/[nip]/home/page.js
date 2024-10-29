@@ -4,15 +4,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 const DosenHomePage = () => {
   const router = useRouter();
   const [isAuthChecked, setIsAuthChecked] = useState(false);
-  const [courseData, setCourseData] = useState(null);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,32 +26,25 @@ const DosenHomePage = () => {
   }, [router]);
 
   useEffect(() => {
-    const fetchCourseData = async () => {
+    const fetchCourses = async () => {
       setLoading(true);
       try {
-        const courseDocRef = doc(
-          collection(db, "mataKuliah"),
-          "Teori Bahasa dan Otomata"
-        );
-        const courseDoc = await getDoc(courseDocRef);
-
-        if (courseDoc.exists()) {
-          setCourseData({
-            id: courseDoc.id,
-            ...courseDoc.data(),
-            progress: Math.floor(Math.random() * 100), // Atur progress acak atau sesuai logika yang dibutuhkan
-          });
-        } else {
-          console.error("Mata kuliah tidak ditemukan");
-        }
+        const coursesCollection = collection(db, "mataKuliah");
+        const courseDocs = await getDocs(coursesCollection);
+        const courseList = courseDocs.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          progress: Math.floor(Math.random() * 100), // Optional: generate random progress
+        }));
+        setCourses(courseList);
       } catch (error) {
-        console.error("Error fetching mata kuliah: ", error);
+        console.error("Error fetching courses: ", error);
       }
       setLoading(false);
     };
 
     if (isAuthChecked) {
-      fetchCourseData();
+      fetchCourses();
     }
   }, [isAuthChecked]);
 
@@ -65,60 +57,46 @@ const DosenHomePage = () => {
       <main className="flex-1 p-6">
         {/* Section untuk Dashboard Cards */}
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <DashboardCard
-            title="Messages"
-            description="Communicate"
-            color="bg-blue-500"
-          />
-          <DashboardCard
-            title="Profile"
-            description="Your Profile"
-            color="bg-green-500"
-          />
-          <DashboardCard
-            title="Settings"
-            description="Preferences"
-            color="bg-yellow-500"
-          />
-          <DashboardCard
-            title="Grades"
-            description="Performance"
-            color="bg-red-500"
-          />
+          <DashboardCard title="Messages" description="Communicate" color="bg-blue-500" />
+          <DashboardCard title="Profile" description="Your Profile" color="bg-green-500" />
+          <DashboardCard title="Settings" description="Preferences" color="bg-yellow-500" />
+          <DashboardCard title="Grades" description="Performance" color="bg-red-500" />
         </div>
 
-        {/* Section untuk Recently Accessed Courses */}
+        {/* Section untuk Menampilkan Semua Mata Kuliah */}
         <div className="mt-12 max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Recently Accessed Courses
+            Mata Kuliah yang Diakses
           </h2>
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-            <h3 className="text-lg font-semibold text-purple-700">
-              2024 Ganjil | {courseData ? courseData.id : "Loading..."}
-            </h3>
-            <p className="text-gray-500 text-sm mb-4">
-              Mata Kuliah {courseData ? courseData.id : "Loading..."} Kurikulum
-              511.2024
-            </p>
-            {loading ? (
-              <div>Loading progress...</div>
-            ) : (
-              <ProgressBar progress={courseData.progress} />
-            )}
+          {loading ? (
+            <div>Loading courses...</div>
+          ) : (
+            courses.map((course) => (
+              <div
+                key={course.id}
+                className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 mb-4"
+              >
+                <h3 className="text-lg font-semibold text-purple-700">
+                  2024 Ganjil | {course.id}
+                </h3>
+                <p className="text-gray-500 text-sm mb-4">
+                  Mata Kuliah {course.id} Kurikulum 511.2024
+                </p>
+                <ProgressBar progress={course.progress} />
 
-            {/* Button untuk navigasi ke halaman detail mata kuliah */}
-            <button
-              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-6 rounded"
-              onClick={() => {
-                const targetUrl = `/dosen/mataKuliah/${encodeURIComponent(
-                  courseData.id
-                )}`;
-                router.push(targetUrl);
-              }}
-            >
-              Go to Course Details
-            </button>
-          </div>
+                {/* Button untuk navigasi ke halaman detail mata kuliah */}
+                <button
+                  className="mt-4 bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-6 rounded"
+                  onClick={() => {
+                    const targetUrl = `/dosen/mataKuliah/${encodeURIComponent(course.id)}`;
+                    router.push(targetUrl);
+                  }}
+                >
+                  Go to Course Details
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </main>
     </div>

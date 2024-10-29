@@ -1,3 +1,5 @@
+// mahasiswa/mataKuliah/[namaMataKuliah]
+
 "use client";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
@@ -56,7 +58,10 @@ const CourseDetail = ({ params }) => {
 
             setTopics(topicsList);
           } else {
-            console.error("Course tidak ditemukan di Firestore:", courseRef.path);
+            console.error(
+              "Course tidak ditemukan di Firestore:",
+              courseRef.path
+            );
           }
         } catch (error) {
           console.error("Error fetching course data:", error);
@@ -123,7 +128,7 @@ const CourseDetail = ({ params }) => {
                             className="mr-2"
                           />
                           <a
-                            href={`/mahasiswa/absensi/${absen.id}`}
+                            href={`/mahasiswa/absensi/${topic.id}/${absen.id}`}
                             className="font-semibold text-blue-500 hover:underline"
                           >
                             Presensi
@@ -132,7 +137,9 @@ const CourseDetail = ({ params }) => {
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500">Belum ada presensi untuk pertemuan ini.</p>
+                    <p className="text-gray-500">
+                      Belum ada presensi untuk pertemuan ini.
+                    </p>
                   )}
                 </div>
               </details>
