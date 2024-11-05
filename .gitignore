@@ -37,3 +37,4 @@ next-env.d.ts
 Backend/labels.npy
 Backend/model.tflite
 Backend/venv/
+Backend/my_model.h5
