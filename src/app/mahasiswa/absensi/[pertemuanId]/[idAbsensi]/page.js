@@ -1,10 +1,11 @@
-// mahasiswa/absensi/
+// src/app/mahasiswa/absensi/[pertemuanID]/[IDabsensi]/page.js
 
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { db } from "@/lib/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import Navbar from "@/components/Navbar";
+import Webcam from "react-webcam";
 
 const Breadcrumb = ({ path }) => (
   <nav className="text-white text-sm mt-2 text-center">
@@ -18,23 +19,21 @@ const Breadcrumb = ({ path }) => (
 );
 
 const AbsensiDetail = ({ params }) => {
-  const pertemuanId = decodeURIComponent(params.pertemuanId); // decode pertemuanId
-  const idAbsensi = decodeURIComponent(params.idAbsensi); // decode idAbsensi
+  const pertemuanId = decodeURIComponent(params.pertemuanId);
+  const idAbsensi = decodeURIComponent(params.idAbsensi);
   const [absensi, setAbsensi] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAttending, setIsAttending] = useState(null);
-
-  const sessionData =
-    typeof window !== "undefined"
-      ? JSON.parse(sessionStorage.getItem("session_mahasiswa"))
-      : null;
+  const [detectedName, setDetectedName] = useState(null); // Nama dari prediksi model
+  const [confidence, setConfidence] = useState(null); // Akurasi prediksi
+  const [isFaceRecognitionActive, setIsFaceRecognitionActive] = useState(false); // Status aktif face recognition
+  const webcamRef = useRef(null);
+  const sessionData = typeof window !== "undefined" ? JSON.parse(sessionStorage.getItem("session_mahasiswa")) : null;
   const userNIM = sessionData?.nimOrNip;
-  console.log("NIM mahasiswa dari session:", userNIM);
 
   useEffect(() => {
     const fetchAbsensi = async () => {
       try {
-        console.log("Mengambil data absensi untuk ID:", idAbsensi);
         const absensiRef = doc(
           db,
           "mataKuliah",
@@ -48,11 +47,8 @@ const AbsensiDetail = ({ params }) => {
         const absensiDoc = await getDoc(absensiRef);
         if (absensiDoc.exists()) {
           setAbsensi(absensiDoc.data());
-          console.log("Data absensi ditemukan:", absensiDoc.data());
         } else {
-          console.error(
-            `Absensi tidak ditemukan untuk path: mataKuliah/Teori Bahasa dan Otomata/Pertemuan/${pertemuanId}/Absensi/${idAbsensi}`
-          );
+          console.error("Absensi tidak ditemukan.");
         }
       } catch (error) {
         console.error("Error fetching absensi:", error);
@@ -64,19 +60,8 @@ const AbsensiDetail = ({ params }) => {
     fetchAbsensi();
   }, [idAbsensi, pertemuanId]);
 
-  console.log("Pertemuan ID:", pertemuanId);
-  console.log("ID Absensi:", idAbsensi);
-
-  const handleAttendance = async (status) => {
+  const saveAttendance = async () => {
     try {
-      if (!userNIM) {
-        console.error("User NIM tidak ditemukan di session storage.");
-        return;
-      }
-
-      console.log(
-        `Mencoba menyimpan status kehadiran sebagai "${status}" untuk NIM: ${userNIM}`
-      );
       const studentAttendanceRef = doc(
         db,
         "mataKuliah",
@@ -88,12 +73,53 @@ const AbsensiDetail = ({ params }) => {
         "Mahasiswa",
         userNIM
       );
-
-      await setDoc(studentAttendanceRef, { status });
-      setIsAttending(status);
-      console.log("Status kehadiran berhasil disimpan:", status);
+      await setDoc(studentAttendanceRef, { isAvailable: true });
+      setIsAttending("Hadir");
     } catch (error) {
       console.error("Gagal menyimpan kehadiran:", error);
+    }
+  };
+
+  // Fungsi untuk memulai proses face recognition secara real-time
+  const startFaceRecognition = () => {
+    setIsFaceRecognitionActive(true);
+
+    // Deteksi wajah secara periodik
+    const interval = setInterval(async () => {
+      if (webcamRef.current) {
+        const imageSrc = webcamRef.current.getScreenshot();
+        try {
+          const response = await fetch("http://localhost:5000/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imageSrc }),
+          });
+
+          const data = await response.json();
+          if (data.recognized) {
+            setDetectedName(data.name);
+            setConfidence(data.accuracy);
+          } else {
+            setDetectedName("Tidak dikenal");
+            setConfidence("N/A");
+          }
+        } catch (error) {
+          console.error("Gagal mengenali wajah:", error);
+        }
+      }
+    }, 2000); // Pengambilan gambar setiap 2 detik
+
+    // Bersihkan interval ketika face recognition dihentikan
+    return () => clearInterval(interval);
+  };
+
+  // Fungsi untuk menyimpan data absensi ketika tombol diklik
+  const handleSaveAttendance = async () => {
+    if (detectedName && detectedName !== "Tidak dikenal") {
+      await saveAttendance(); // Simpan kehadiran ke database
+      alert(`Kehadiran ${detectedName} berhasil disimpan.`);
+    } else {
+      alert("Wajah tidak dikenali. Kehadiran tidak dapat disimpan.");
     }
   };
 
@@ -132,7 +158,7 @@ const AbsensiDetail = ({ params }) => {
 
               <div className="flex justify-center gap-4">
                 <button
-                  onClick={() => handleAttendance("Hadir")}
+                  onClick={startFaceRecognition}
                   className={`px-6 py-2 rounded-md font-semibold text-white ${
                     isAttending === "Hadir" ? "bg-green-500" : "bg-blue-500"
                   }`}
@@ -140,7 +166,7 @@ const AbsensiDetail = ({ params }) => {
                   Hadir
                 </button>
                 <button
-                  onClick={() => handleAttendance("Tidak Hadir")}
+                  onClick={() => setIsAttending("Tidak Hadir")}
                   className={`px-6 py-2 rounded-md font-semibold text-white ${
                     isAttending === "Tidak Hadir" ? "bg-red-500" : "bg-gray-500"
                   }`}
@@ -149,10 +175,24 @@ const AbsensiDetail = ({ params }) => {
                 </button>
               </div>
 
-              {isAttending && (
-                <p className="mt-4 text-green-600 font-semibold">
-                  Anda telah menandai status sebagai: {isAttending}
-                </p>
+              {isFaceRecognitionActive && (
+                <div className="mt-6">
+                  <Webcam
+                    audio={false}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    className="w-full h-64 rounded-lg"
+                  />
+                  <p className="mt-4 text-green-600 font-semibold">
+                    Wajah terdeteksi: {detectedName || "Mendeteksi..."} dengan tingkat akurasi: {confidence || "Mendeteksi..."}
+                  </p>
+                  <button
+                    onClick={handleSaveAttendance}
+                    className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md font-semibold"
+                  >
+                    Simpan Kehadiran
+                  </button>
+                </div>
               )}
             </div>
           ) : (
